@@ -1,97 +1,145 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# AR in React Native
 
-# Getting Started
+A production-ready implementation demonstrating how to integrate native AR features into React Native apps using custom native modules with **ARKit** (iOS) and **ARCore** (Android).
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## 🎯 Features
 
-## Step 1: Start Metro
+- ✅ **Native AR Integration**: ARKit (iOS) and ARCore (Android)
+- ✅ **Type-Safe API**: Full TypeScript support
+- ✅ **React Navigation**: Stack navigator with AR screen
+- ✅ **Session Management**: Automatic AR session lifecycle handling
+- ✅ **Graceful Fallback**: Detects and handles unsupported devices
+- ✅ **Production Ready**: Proper error handling and cleanup
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## 📋 Prerequisites
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide.
+
+### Device Requirements
+- **iOS**: Physical device with A9+ processor (iPhone 6s or later)
+- **Android**: ARCore-compatible device ([see list](https://developers.google.com/ar/devices))
+
+**Important**: AR features do NOT work in simulators/emulators.
+
+## 🚀 Quick Start
+
+### Step 1: Install Dependencies
 
 ```sh
-# Using npm
+npm install
+```
+
+### Step 2: Install iOS Pods
+
+```sh
+cd ios && pod install && cd ..
+```
+
+### Step 3: Start Metro
+
+```sh
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
+### Step 4: Build and Run
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
+**Android:**
 ```sh
-# Using npm
 npm run android
-
-# OR using Yarn
-yarn android
 ```
+
+**iOS:**
+```sh
+npm run ios
+```
+
+**Note**: Must use a physical device - AR does not work in simulators/emulators.
+
+## 📱 Usage
+
+1. Launch the app on your physical device
+2. Tap **"Launch AR Experience"** on the home screen
+3. Grant camera permissions when prompted
+4. The app will check AR support and start an AR session
+5. Use **"Start/Stop Session"** to control the AR session
+
+## 🏗️ Architecture
+
+See [AR_IMPLEMENTATION.md](./AR_IMPLEMENTATION.md) for detailed documentation including:
+- Native module implementation details
+- Platform-specific AR configuration
+- TypeScript bridge API
+- Lifecycle management
+- Next steps for adding AR rendering
+
+## 📂 Project Structure
+
+```
+src/
+├── native/
+│   └── ARNativeModule.ts       # TypeScript bridge to native modules
+├── screens/
+│   ├── HomeScreen.tsx          # Landing screen with navigation
+│   └── ARScreen.tsx            # AR experience with session management
+└── types/
+    └── navigation.ts           # Navigation type definitions
+
+ios/ARinReactNative/
+├── ARNativeModule.swift        # ARKit implementation
+├── ARNativeModule.m            # Objective-C bridge
+└── Info.plist                  # Camera permissions
+
+android/app/src/main/
+├── java/com/arinreactnative/
+│   ├── ARNativeModule.kt       # ARCore implementation
+│   └── ARNativePackage.kt      # Module registration
+└── AndroidManifest.xml         # Permissions and ARCore metadata
+```
+
+## 🔧 Native Module API
+
+```typescript
+interface ARNativeModuleType {
+  // Check if AR is supported on this device
+  isSupported(): Promise<boolean>;
+  
+  // Start an AR session with world tracking
+  startSession(): Promise<void>;
+  
+  // Stop the current AR session
+  stopSession(): Promise<void>;
+}
+```
+
+## 🐛 Troubleshooting
 
 ### iOS
+- **"AR Not Supported"**: Requires A9+ chip (iPhone 6s or later)
+- **Camera permission denied**: Go to Settings → Privacy → Camera
+- **Build errors**: Run `cd ios && pod install && cd ..`
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+### Android
+- **"ARCore needs to be installed"**: Install ARCore from Google Play Store
+- **"AR Not Supported"**: Check [device compatibility](https://developers.google.com/ar/devices)
+- **Permission errors**: Grant camera permission in app settings
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+### General Issues
+See the [React Native Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
 
-```sh
-bundle install
-```
+## 🚀 Next Steps
 
-Then, and every time you update your native dependencies, run:
+To add actual AR rendering:
+1. **iOS**: Integrate `ARSCNView` or `ARView` (RealityKit)
+2. **Android**: Add `ArFragment` or custom rendering surface
+3. **Both**: Implement hit testing, anchor placement, and 3D models
 
-```sh
-bundle exec pod install
-```
+## 📚 Learn More
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+- [ARKit Documentation](https://developer.apple.com/documentation/arkit)
+- [ARCore Documentation](https://developers.google.com/ar)
+- [React Navigation](https://reactnavigation.org/)
+- [React Native Documentation](https://reactnative.dev)
 
-```sh
-# Using npm
-npm run ios
+---
 
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+**Built with**: React Native 0.83, TypeScript, React Navigation, ARKit, ARCore
