@@ -11,6 +11,7 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { ARNativeModule } from '../native/ARNativeModule';
+import { ARViewNative } from '../native/ARView';
 import { RootStackParamList } from '../types/navigation';
 
 type ARScreenProps = {
@@ -136,15 +137,11 @@ export const ARScreen: React.FC<ARScreenProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* AR View Placeholder */}
-      <View style={styles.arViewPlaceholder}>
-        <Text style={styles.placeholderText}>
-          AR View Placeholder
-        </Text>
-        <Text style={styles.placeholderSubtext}>
-          Camera view and AR rendering will be implemented here
-        </Text>
-        
+      {/* AR Camera View */}
+      <ARViewNative style={styles.arView} />
+      
+      {/* Status Overlay */}
+      <View style={styles.statusOverlay}>
         <View style={styles.statusContainer}>
           <View
             style={[
@@ -153,12 +150,11 @@ export const ARScreen: React.FC<ARScreenProps> = ({ navigation }) => {
             ]}
           />
           <Text style={styles.statusText}>
-            Session: {isSessionActive ? 'Active' : 'Inactive'}
+            {isSessionActive ? 'AR Active' : 'AR Inactive'}
           </Text>
         </View>
-
         <Text style={styles.platformText}>
-          Platform: {Platform.OS === 'ios' ? 'ARKit' : 'ARCore'}
+          {Platform.OS === 'ios' ? 'ARKit' : 'ARCore'}
         </Text>
       </View>
 
@@ -208,31 +204,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
-  arViewPlaceholder: {
+  arView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#1a1a1a',
-    margin: 20,
+  },
+  statusOverlay: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     borderRadius: 10,
-    padding: 20,
-  },
-  placeholderText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 10,
-  },
-  placeholderSubtext: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
-    marginBottom: 30,
+    padding: 15,
   },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
   },
   statusIndicator: {
     width: 12,
@@ -252,13 +238,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   platformText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#999',
-    marginTop: 10,
+    marginTop: 5,
   },
   controls: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     padding: 20,
     paddingBottom: 40,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   controlButton: {
     paddingVertical: 15,

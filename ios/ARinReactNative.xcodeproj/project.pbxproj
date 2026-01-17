@@ -9,10 +9,13 @@
 /* Begin PBXBuildFile section */
 		0C80B921A6F3F58F76C31292 /* libPods-ARinReactNative.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-ARinReactNative.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		1B25324B9BEDA31959AACD60 /* ARView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15C5D567FD28E73F63D3A8D /* ARView.swift */; };
 		1B9F072A524428304952AB05 /* ARNativeModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D68F11C1463C4BE8062177DC /* ARNativeModule.swift */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		7E8A916C0AF1D93B91AF2802 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		DACF8C376034B78762F49163 /* ARViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 467820FC2C5A25A45EC61624 /* ARViewManager.m */; };
+		DEBC09AECB723B210ABC3E9C /* ARViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60B5E9B3F72F064D7FAAC450 /* ARViewManager.swift */; };
 		E05A755DEA8365B22476ECBD /* ARNativeModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FFE6D97F01691C87A264684 /* ARNativeModule.m */; };
 /* End PBXBuildFile section */
 
@@ -22,11 +25,14 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ARinReactNative/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = ARinReactNative/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-ARinReactNative.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ARinReactNative.debug.xcconfig"; path = "Target Support Files/Pods-ARinReactNative/Pods-ARinReactNative.debug.xcconfig"; sourceTree = "<group>"; };
+		467820FC2C5A25A45EC61624 /* ARViewManager.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = ARViewManager.m; path = ARinReactNative/ARViewManager.m; sourceTree = "<group>"; };
 		4FFE6D97F01691C87A264684 /* ARNativeModule.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = ARNativeModule.m; path = ARinReactNative/ARNativeModule.m; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-ARinReactNative.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ARinReactNative.release.xcconfig"; path = "Target Support Files/Pods-ARinReactNative/Pods-ARinReactNative.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-ARinReactNative.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ARinReactNative.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		60B5E9B3F72F064D7FAAC450 /* ARViewManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ARViewManager.swift; path = ARinReactNative/ARViewManager.swift; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ARinReactNative/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ARinReactNative/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A15C5D567FD28E73F63D3A8D /* ARView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ARView.swift; path = ARinReactNative/ARView.swift; sourceTree = "<group>"; };
 		D68F11C1463C4BE8062177DC /* ARNativeModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ARNativeModule.swift; path = ARinReactNative/ARNativeModule.swift; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -53,6 +59,9 @@
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 				4FFE6D97F01691C87A264684 /* ARNativeModule.m */,
 				D68F11C1463C4BE8062177DC /* ARNativeModule.swift */,
+				A15C5D567FD28E73F63D3A8D /* ARView.swift */,
+				60B5E9B3F72F064D7FAAC450 /* ARViewManager.swift */,
+				467820FC2C5A25A45EC61624 /* ARViewManager.m */,
 			);
 			name = ARinReactNative;
 			sourceTree = "<group>";
@@ -255,6 +264,9 @@
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				E05A755DEA8365B22476ECBD /* ARNativeModule.m in Sources */,
 				1B9F072A524428304952AB05 /* ARNativeModule.swift in Sources */,
+				1B25324B9BEDA31959AACD60 /* ARView.swift in Sources */,
+				DEBC09AECB723B210ABC3E9C /* ARViewManager.swift in Sources */,
+				DACF8C376034B78762F49163 /* ARViewManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -273,7 +285,7 @@
 				DEVELOPMENT_TEAM = G22R3G9GQ9;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = ARinReactNative/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -305,7 +317,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = G22R3G9GQ9;
 				INFOPLIST_FILE = ARinReactNative/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -374,7 +386,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -444,7 +456,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",

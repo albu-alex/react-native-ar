@@ -27,11 +27,6 @@ export interface ARNativeModuleType {
   stopSession(): Promise<void>;
 }
 
-// Debug: Log all available native modules
-console.log('Available NativeModules:', Object.keys(NativeModules));
-console.log('ARNativeModule exists?', !!NativeModules.ARNativeModule);
-console.log('ARNativeModule value:', NativeModules.ARNativeModule);
-
 // Link to the native module
 const ARNativeModuleRaw = NativeModules.ARNativeModule
   ? NativeModules.ARNativeModule
