@@ -13,8 +13,6 @@ class ARNativeModule: NSObject {
   
   private var arSession: ARSession?
   
-  // MARK: - Module Setup
-  
   @objc
   static func requiresMainQueueSetup() -> Bool {
     return true

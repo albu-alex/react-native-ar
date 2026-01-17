@@ -5,7 +5,7 @@
 //  Created by React Native on 2026-01-16.
 //
 
-#import <React/RCTBridgeModule.h>
+#import <React-Core/React/RCTBridgeModule.h>
 
 @interface RCT_EXTERN_MODULE(ARNativeModule, NSObject)
 
