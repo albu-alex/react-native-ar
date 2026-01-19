@@ -25,6 +25,47 @@ export interface ARNativeModuleType {
    * @returns Promise that resolves when session stops
    */
   stopSession(): Promise<void>;
+
+  /**
+   * Start object scanning
+   * @returns Promise that resolves when scanning starts
+   */
+  startObjectScan(): Promise<void>;
+
+  /**
+   * Stop object scanning and get scan data
+   * @returns Promise with scan data (vertices, faces, counts, etc.)
+   */
+  stopObjectScan(): Promise<{
+    vertices: number[][];
+    faces: number[][];
+    vertexCount: number;
+    faceCount: number;
+    meshCount: number;
+    boundingBox?: {
+      min: number[];
+      max: number[];
+    };
+  }>;
+
+  /**
+   * Clear current scan
+   * @returns Promise that resolves when scan is cleared
+   */
+  clearScan(): Promise<void>;
+
+  /**
+   * Export scan as OBJ string
+   * @returns Promise with OBJ file content
+   */
+  exportScanAsOBJ(): Promise<string>;
+
+  /**
+   * Save scan to file
+   * @param filename Name of the file (without extension)
+   * @returns Promise with file URL
+   */
+  saveOBJToFile(filename: string): Promise<string>;
 }
 
 // Link to the native module

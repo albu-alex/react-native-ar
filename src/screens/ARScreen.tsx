@@ -20,30 +20,14 @@ type ARScreenProps = {
 
 export const ARScreen: React.FC<ARScreenProps> = ({ navigation }) => {
   const [isSupported, setIsSupported] = useState<boolean | null>(null);
-  const [isSessionActive, setIsSessionActive] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [scanProgress, setScanProgress] = useState<any>(null);
 
   // Check AR support on mount
   useEffect(() => {
     checkARSupport();
   }, []);
-
-  // Handle session lifecycle with screen focus
-  useFocusEffect(
-    useCallback(() => {
-      // Start session when screen gains focus (if supported)
-      if (isSupported && !isSessionActive) {
-        handleStartSession();
-      }
-
-      // Cleanup: stop session when screen loses focus
-      return () => {
-        if (isSessionActive) {
-          handleStopSession();
-        }
-      };
-    }, [isSupported, isSessionActive])
-  );
 
   const checkARSupport = async () => {
     try {
@@ -72,43 +56,56 @@ export const ARScreen: React.FC<ARScreenProps> = ({ navigation }) => {
     }
   };
 
-  const handleStartSession = async () => {
-    if (isSessionActive) return;
-
-    setIsLoading(true);
-    try {
-      await ARNativeModule.startSession();
-      setIsSessionActive(true);
-      console.log('AR Session started successfully');
-    } catch (error: any) {
-      console.error('Error starting AR session:', error);
-      Alert.alert(
-        'AR Session Error',
-        error.message || 'Failed to start AR session',
-        [{ text: 'OK' }]
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleStopSession = async () => {
-    if (!isSessionActive) return;
-
-    try {
-      await ARNativeModule.stopSession();
-      setIsSessionActive(false);
-      console.log('AR Session stopped');
-    } catch (error) {
-      console.error('Error stopping AR session:', error);
-    }
-  };
-
-  const toggleSession = () => {
-    if (isSessionActive) {
-      handleStopSession();
+  const handleStartScan = async () => {
+    if (isScanning) {
+      // Stop scanning
+      setIsLoading(true);
+      try {
+        const scanData = await ARNativeModule.stopObjectScan();
+        setIsScanning(false);
+        setScanProgress(null);
+        
+        Alert.alert(
+          'Scan Complete',
+          `Captured ${scanData.meshCount || 0} meshes with ${scanData.vertexCount || 0} vertices`,
+          [
+            { text: 'OK' },
+            {
+              text: 'Save as OBJ',
+              onPress: async () => {
+                try {
+                  const fileURL = await ARNativeModule.saveOBJToFile('object_scan');
+                  Alert.alert('Saved', `File saved to: ${fileURL}`);
+                } catch (error) {
+                  Alert.alert('Error', 'Failed to save file');
+                }
+              },
+            },
+          ]
+        );
+      } catch (error: any) {
+        console.error('Error stopping scan:', error);
+        Alert.alert('Error', 'Failed to stop scan');
+      } finally {
+        setIsLoading(false);
+      }
     } else {
-      handleStartSession();
+      // Start scanning
+      setIsLoading(true);
+      try {
+        await ARNativeModule.startObjectScan();
+        setIsScanning(true);
+        console.log('Object scanning started');
+      } catch (error: any) {
+        console.error('Error starting scan:', error);
+        Alert.alert(
+          'Scan Error',
+          error.message || 'Failed to start object scan',
+          [{ text: 'OK' }]
+        );
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -140,48 +137,41 @@ export const ARScreen: React.FC<ARScreenProps> = ({ navigation }) => {
       {/* AR Camera View */}
       <ARViewNative style={styles.arView} />
       
-      {/* Status Overlay */}
-      <View style={styles.statusOverlay}>
-        <View style={styles.statusContainer}>
-          <View
-            style={[
-              styles.statusIndicator,
-              isSessionActive ? styles.statusActive : styles.statusInactive,
-            ]}
-          />
-          <Text style={styles.statusText}>
-            {isSessionActive ? 'AR Active' : 'AR Inactive'}
+      {/* Scanning Status Overlay */}
+      {isScanning && (
+        <View style={styles.statusOverlay}>
+          <View style={styles.statusContainer}>
+            <View style={[styles.statusIndicator, styles.statusScanning]} />
+            <Text style={styles.statusText}>Scanning Object...</Text>
+          </View>
+          {scanProgress && (
+            <Text style={styles.progressText}>
+              Meshes: {scanProgress.meshCount || 0} | Vertices: {scanProgress.vertexCount || 0}
+            </Text>
+          )}
+          <Text style={styles.instructionText}>
+            Move around the object slowly
           </Text>
         </View>
-        <Text style={styles.platformText}>
-          {Platform.OS === 'ios' ? 'ARKit' : 'ARCore'}
-        </Text>
-      </View>
+      )}
 
-      {/* Controls */}
+      {/* Scan Control Button */}
       <View style={styles.controls}>
         <TouchableOpacity
           style={[
-            styles.controlButton,
-            isSessionActive ? styles.stopButton : styles.startButton,
+            styles.scanButton,
+            isScanning ? styles.stopButton : styles.startButton,
           ]}
-          onPress={toggleSession}
+          onPress={handleStartScan}
           disabled={isLoading}
         >
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.controlButtonText}>
-              {isSessionActive ? 'Stop Session' : 'Start Session'}
+            <Text style={styles.scanButtonText}>
+              {isScanning ? 'Stop Scanning' : 'Start Object Scan'}
             </Text>
           )}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backButtonText}>Back to Home</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -212,73 +202,70 @@ const styles = StyleSheet.create({
     top: 60,
     left: 20,
     right: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    borderRadius: 10,
-    padding: 15,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: 12,
+    padding: 20,
   },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 8,
   },
   statusIndicator: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    marginRight: 8,
+    marginRight: 10,
   },
-  statusActive: {
-    backgroundColor: '#4CAF50',
-  },
-  statusInactive: {
-    backgroundColor: '#999',
+  statusScanning: {
+    backgroundColor: '#00BCD4',
   },
   statusText: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#fff',
+    fontWeight: '700',
+  },
+  progressText: {
+    fontSize: 14,
+    color: '#00BCD4',
+    marginTop: 5,
     fontWeight: '600',
   },
-  platformText: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 5,
+  instructionText: {
+    fontSize: 13,
+    color: '#AAA',
+    marginTop: 8,
+    fontStyle: 'italic',
   },
   controls: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 20,
-    paddingBottom: 40,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  },
-  controlButton: {
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 10,
+    padding: 30,
+    paddingBottom: 50,
     alignItems: 'center',
-    marginBottom: 15,
+  },
+  scanButton: {
+    paddingVertical: 18,
+    paddingHorizontal: 50,
+    borderRadius: 30,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   startButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#00BCD4',
   },
   stopButton: {
-    backgroundColor: '#f44336',
+    backgroundColor: '#FF5722',
   },
-  controlButtonText: {
+  scanButtonText: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  backButton: {
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    backgroundColor: '#333',
-  },
-  backButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 20,
+    fontWeight: '700',
   },
 });

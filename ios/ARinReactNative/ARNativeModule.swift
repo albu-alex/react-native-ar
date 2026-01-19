@@ -10,8 +10,13 @@ import ARKit
 
 @objc(ARNativeModule)
 class ARNativeModule: NSObject {
-  
   private var arSession: ARSession?
+  private static var sharedARView: ARView?
+  
+  @objc
+  static func setSharedARView(_ view: ARView) {
+    sharedARView = view
+  }
   
   @objc
   static func requiresMainQueueSetup() -> Bool {
@@ -83,6 +88,123 @@ class ARNativeModule: NSObject {
     
     session.pause()
     resolve(nil)
+  }
+  
+  // MARK: - Object Scanning Methods
+  
+  @objc
+  func startObjectScan(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard let arView = ARNativeModule.sharedARView else {
+      reject(
+        "AR_VIEW_NOT_FOUND",
+        "AR View is not initialized",
+        NSError(domain: "ARNativeModule", code: 2, userInfo: nil)
+      )
+      return
+    }
+    
+    DispatchQueue.main.async {
+      arView.startObjectScan()
+      resolve(nil)
+    }
+  }
+  
+  @objc
+  func stopObjectScan(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard let arView = ARNativeModule.sharedARView else {
+      reject(
+        "AR_VIEW_NOT_FOUND",
+        "AR View is not initialized",
+        NSError(domain: "ARNativeModule", code: 2, userInfo: nil)
+      )
+      return
+    }
+    
+    DispatchQueue.main.async {
+      let scanData = arView.stopObjectScan()
+      resolve(scanData)
+    }
+  }
+  
+  @objc
+  func clearScan(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard let arView = ARNativeModule.sharedARView else {
+      reject(
+        "AR_VIEW_NOT_FOUND",
+        "AR View is not initialized",
+        NSError(domain: "ARNativeModule", code: 2, userInfo: nil)
+      )
+      return
+    }
+    
+    DispatchQueue.main.async {
+      arView.clearScan()
+      resolve(nil)
+    }
+  }
+  
+  @objc
+  func exportScanAsOBJ(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard let arView = ARNativeModule.sharedARView else {
+      reject(
+        "AR_VIEW_NOT_FOUND",
+        "AR View is not initialized",
+        NSError(domain: "ARNativeModule", code: 2, userInfo: nil)
+      )
+      return
+    }
+    
+    DispatchQueue.main.async {
+      if let objContent = arView.exportScanAsOBJ() {
+        resolve(objContent)
+      } else {
+        reject(
+          "NO_SCAN_DATA",
+          "No scan data available to export",
+          NSError(domain: "ARNativeModule", code: 3, userInfo: nil)
+        )
+      }
+    }
+  }
+  
+  @objc
+  func saveOBJToFile(
+    _ filename: String,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard let arView = ARNativeModule.sharedARView else {
+      reject(
+        "AR_VIEW_NOT_FOUND",
+        "AR View is not initialized",
+        NSError(domain: "ARNativeModule", code: 2, userInfo: nil)
+      )
+      return
+    }
+    
+    DispatchQueue.main.async {
+      if let fileURL = arView.saveOBJToFile(filename: filename) {
+        resolve(fileURL.absoluteString)
+      } else {
+        reject(
+          "SAVE_FAILED",
+          "Failed to save OBJ file",
+          NSError(domain: "ARNativeModule", code: 4, userInfo: nil)
+        )
+      }
+    }
   }
   
   // MARK: - Cleanup

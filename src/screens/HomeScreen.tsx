@@ -10,9 +10,9 @@ type HomeScreenProps = {
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>AR in React Native</Text>
+      <Text style={styles.title}>3D Object Scanner</Text>
       <Text style={styles.subtitle}>
-        Experience native AR with ARKit and ARCore
+        Scan real-world objects with AR
       </Text>
 
       <TouchableOpacity
@@ -20,15 +20,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         onPress={() => navigation.navigate('AR')}
         activeOpacity={0.8}
       >
-        <Text style={styles.buttonText}>Launch AR Experience</Text>
+        <Text style={styles.buttonText}>Start Scanning</Text>
       </TouchableOpacity>
 
       <View style={styles.infoContainer}>
         <Text style={styles.infoText}>
-          • iOS: Uses ARKit for world tracking
+          • Works with or without LiDAR sensor
         </Text>
         <Text style={styles.infoText}>
-          • Android: Uses ARCore for AR sessions
+          • Export scans as OBJ files
+        </Text>
+        <Text style={styles.infoText}>
+          • Move around objects for best results
         </Text>
       </View>
     </View>
