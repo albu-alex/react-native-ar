@@ -194,14 +194,49 @@ class ARNativeModule: NSObject {
       return
     }
     
+    // Perform save synchronously on main thread to ensure completion
     DispatchQueue.main.async {
-      if let fileURL = arView.saveOBJToFile(filename: filename) {
-        resolve(fileURL.absoluteString)
-      } else {
+      guard let fileURL = arView.saveOBJToFile(filename: filename) else {
         reject(
           "SAVE_FAILED",
-          "Failed to save OBJ file",
+          "Failed to save OBJ file - no data available or write failed",
           NSError(domain: "ARNativeModule", code: 4, userInfo: nil)
+        )
+        return
+      }
+      
+      // File has been saved and verified by saveOBJToFile
+      // Double-check accessibility before returning
+      let fileManager = FileManager.default
+      guard fileManager.fileExists(atPath: fileURL.path),
+            fileManager.isReadableFile(atPath: fileURL.path) else {
+        reject(
+          "FILE_NOT_ACCESSIBLE",
+          "File was created but is not accessible after verification",
+          NSError(domain: "ARNativeModule", code: 5, userInfo: nil)
+        )
+        return
+      }
+      
+      // Try to get file size as final verification
+      do {
+        let attributes = try fileManager.attributesOfItem(atPath: fileURL.path)
+        if let fileSize = attributes[.size] as? UInt64, fileSize > 0 {
+          print("[ARNativeModule] File ready for sharing: \(fileURL.path), size: \(fileSize) bytes")
+          // Return the absolute file path
+          resolve(fileURL.path)
+        } else {
+          reject(
+            "FILE_EMPTY",
+            "File was created but has no content",
+            NSError(domain: "ARNativeModule", code: 6, userInfo: nil)
+          )
+        }
+      } catch {
+        reject(
+          "FILE_VERIFICATION_FAILED",
+          "Failed to verify file: \(error.localizedDescription)",
+          error as NSError
         )
       }
     }

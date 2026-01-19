@@ -63,7 +63,7 @@ export interface ARNativeModuleType {
   /**
    * Save scan to file
    * @param filename Name of the file (without extension)
-   * @returns Promise with file URL
+   * @returns Promise with file path
    */
   saveOBJToFile(filename: string): Promise<string>;
 }

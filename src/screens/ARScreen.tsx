@@ -7,6 +7,7 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
+  Share,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -65,19 +66,60 @@ export const ARScreen: React.FC<ARScreenProps> = ({ navigation }) => {
         setIsScanning(false);
         setScanProgress(null);
         
+        const filename = `scan_${Date.now()}`;
+        
         Alert.alert(
           'Scan Complete',
           `Captured ${scanData.meshCount || 0} meshes with ${scanData.vertexCount || 0} vertices`,
           [
-            { text: 'OK' },
+            { text: 'Dismiss', style: 'cancel' },
             {
-              text: 'Save as OBJ',
+              text: 'Save',
               onPress: async () => {
                 try {
-                  const fileURL = await ARNativeModule.saveOBJToFile('object_scan');
-                  Alert.alert('Saved', `File saved to: ${fileURL}`);
+                  const filePath = await ARNativeModule.saveOBJToFile(filename);
+                  Alert.alert('Saved', `File saved to: ${filePath}`);
                 } catch (error) {
                   Alert.alert('Error', 'Failed to save file');
+                }
+              },
+            },
+            {
+              text: 'Share',
+              onPress: async () => {
+                try {
+                  console.log('Starting file save...');
+                  const filePath = await ARNativeModule.saveOBJToFile(filename);
+                  console.log('File saved successfully:', filePath);
+                  
+                  // Verify file was created
+                  if (!filePath) {
+                    throw new Error('Failed to create file - no path returned');
+                  }
+                  
+                  // Add a small delay to ensure file is fully flushed to disk
+                  await new Promise(resolve => setTimeout(resolve, 200));
+                  
+                  console.log('Attempting to share file...');
+                  
+                  // Use React Native's cross-platform Share API
+                  const shareOptions = {
+                    title: '3D Object Scan',
+                    message: `3D scan captured: ${filename}.obj`,
+                    url: filePath, // Pass the absolute path
+                  };
+                  
+                  const result = await Share.share(shareOptions);
+                  
+                  if (result.action === Share.sharedAction) {
+                    console.log('File shared successfully');
+                    Alert.alert('Success', 'File shared successfully');
+                  } else if (result.action === Share.dismissedAction) {
+                    console.log('Share dismissed by user');
+                  }
+                } catch (error) {
+                  console.error('Error sharing file:', error);
+                  Alert.alert('Error', `Failed to share file: ${error}`);
                 }
               },
             },
