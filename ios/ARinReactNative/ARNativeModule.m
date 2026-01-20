@@ -27,11 +27,20 @@ RCT_EXTERN_METHOD(stopObjectScan:(RCTPromiseResolveBlock)resolve
 RCT_EXTERN_METHOD(clearScan:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(exportScanAsOBJ:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(isPhotogrammetrySupported:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(saveOBJToFile:(NSString *)filename
+RCT_EXTERN_METHOD(processPhotogrammetry:(NSString *)inputDirectory
+                  outputFilename:(NSString *)outputFilename
+                  detail:(NSString *)detail
+                  progressCallback:(RCTResponseSenderBlock)progressCallback
                   resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(getPhotogrammetryCaptureDirectory:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(getPhotogrammetryImageCount:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 + (BOOL)requiresMainQueueSetup

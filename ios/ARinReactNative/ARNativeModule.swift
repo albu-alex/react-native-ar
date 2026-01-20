@@ -152,8 +152,94 @@ class ARNativeModule: NSObject {
     }
   }
   
+  // MARK: - Photogrammetry Methods
+  
+  /// Check if photogrammetry is supported on this device
+  /// Requires Mac with 4GB+ GPU and ray tracing, or iOS device with LiDAR
   @objc
-  func exportScanAsOBJ(
+  func isPhotogrammetrySupported(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    let supported = PhotogrammetryCapture.isPhotogrammetrySupported()
+    resolve(supported)
+  }
+  
+  /// Process captured images with PhotogrammetrySession
+  /// @param inputDirectory: Path to directory containing captured images
+  /// @param outputFilename: Name for output USDZ file (without extension)
+  /// @param detail: Quality level - "reduced", "medium", "full", or "raw"
+  /// @param progressCallback: RCTResponseSenderBlock for progress updates
+  @objc
+  func processPhotogrammetry(
+    _ inputDirectory: String,
+    outputFilename: String,
+    detail: String,
+    progressCallback: @escaping RCTResponseSenderBlock,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    // Check if photogrammetry is supported
+    guard PhotogrammetryCapture.isPhotogrammetrySupported() else {
+      reject(
+        "PHOTOGRAMMETRY_NOT_SUPPORTED",
+        "Photogrammetry is not supported on this device. Requires Mac with 4GB+ GPU and ray tracing, or iOS device with LiDAR.",
+        NSError(domain: "ARNativeModule", code: 7, userInfo: nil)
+      )
+      return
+    }
+    
+    // Stop AR session before processing
+    guard let arView = ARNativeModule.sharedARView else {
+      reject(
+        "AR_VIEW_NOT_FOUND",
+        "AR View is not initialized",
+        NSError(domain: "ARNativeModule", code: 2, userInfo: nil)
+      )
+      return
+    }
+    
+    DispatchQueue.main.async {
+      arView.stopSession()
+      
+      Task { @MainActor in
+        do {
+          let photogrammetry = PhotogrammetryCapture()
+          let inputURL = URL(fileURLWithPath: inputDirectory)
+          
+          let outputURL = try await photogrammetry.processWithPhotogrammetrySession(
+            inputDirectory: inputURL,
+            outputFilename: outputFilename,
+            detail: detail
+          ) { status, progress in
+            // Send progress updates
+            progressCallback([[
+              "status": status,
+              "progress": progress
+            ]])
+          }
+          
+          // Restart AR session after processing
+          arView.startSession()
+          
+          resolve(outputURL.path)
+        } catch {
+          // Restart AR session even on error
+          arView.startSession()
+          
+          reject(
+            "PHOTOGRAMMETRY_FAILED",
+            "Failed to process photogrammetry: \(error.localizedDescription)",
+            error as NSError
+          )
+        }
+      }
+    }
+  }
+  
+  /// Get the directory where photogrammetry images are being captured
+  @objc
+  func getPhotogrammetryCaptureDirectory(
     _ resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -167,22 +253,18 @@ class ARNativeModule: NSObject {
     }
     
     DispatchQueue.main.async {
-      if let objContent = arView.exportScanAsOBJ() {
-        resolve(objContent)
+      if let directory = arView.getPhotogrammetryCaptureDirectory() {
+        resolve(directory)
       } else {
-        reject(
-          "NO_SCAN_DATA",
-          "No scan data available to export",
-          NSError(domain: "ARNativeModule", code: 3, userInfo: nil)
-        )
+        resolve(NSNull())
       }
     }
   }
   
+  /// Get the current count of captured images
   @objc
-  func saveOBJToFile(
-    _ filename: String,
-    resolver resolve: @escaping RCTPromiseResolveBlock,
+  func getPhotogrammetryImageCount(
+    _ resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     guard let arView = ARNativeModule.sharedARView else {
@@ -194,51 +276,9 @@ class ARNativeModule: NSObject {
       return
     }
     
-    // Perform save synchronously on main thread to ensure completion
     DispatchQueue.main.async {
-      guard let fileURL = arView.saveOBJToFile(filename: filename) else {
-        reject(
-          "SAVE_FAILED",
-          "Failed to save OBJ file - no data available or write failed",
-          NSError(domain: "ARNativeModule", code: 4, userInfo: nil)
-        )
-        return
-      }
-      
-      // File has been saved and verified by saveOBJToFile
-      // Double-check accessibility before returning
-      let fileManager = FileManager.default
-      guard fileManager.fileExists(atPath: fileURL.path),
-            fileManager.isReadableFile(atPath: fileURL.path) else {
-        reject(
-          "FILE_NOT_ACCESSIBLE",
-          "File was created but is not accessible after verification",
-          NSError(domain: "ARNativeModule", code: 5, userInfo: nil)
-        )
-        return
-      }
-      
-      // Try to get file size as final verification
-      do {
-        let attributes = try fileManager.attributesOfItem(atPath: fileURL.path)
-        if let fileSize = attributes[.size] as? UInt64, fileSize > 0 {
-          print("[ARNativeModule] File ready for sharing: \(fileURL.path), size: \(fileSize) bytes")
-          // Return the absolute file path
-          resolve(fileURL.path)
-        } else {
-          reject(
-            "FILE_EMPTY",
-            "File was created but has no content",
-            NSError(domain: "ARNativeModule", code: 6, userInfo: nil)
-          )
-        }
-      } catch {
-        reject(
-          "FILE_VERIFICATION_FAILED",
-          "Failed to verify file: \(error.localizedDescription)",
-          error as NSError
-        )
-      }
+      let count = arView.getPhotogrammetryImageCount()
+      resolve(count)
     }
   }
   

@@ -55,17 +55,38 @@ export interface ARNativeModuleType {
   clearScan(): Promise<void>;
 
   /**
-   * Export scan as OBJ string
-   * @returns Promise with OBJ file content
+   * Check if photogrammetry is supported on this device
+   * Requires Mac with 4GB+ GPU and ray tracing, or iOS device with LiDAR
+   * @returns Promise resolving to true if photogrammetry is supported
    */
-  exportScanAsOBJ(): Promise<string>;
+  isPhotogrammetrySupported(): Promise<boolean>;
 
   /**
-   * Save scan to file
-   * @param filename Name of the file (without extension)
-   * @returns Promise with file path
+   * Process captured images using RealityKit's PhotogrammetrySession
+   * @param inputDirectory Path to directory containing captured images
+   * @param outputFilename Name for output USDZ file (without extension)
+   * @param detail Quality level - "reduced", "medium", "full", or "raw"
+   * @param progressCallback Callback for progress updates
+   * @returns Promise with path to generated USDZ file
    */
-  saveOBJToFile(filename: string): Promise<string>;
+  processPhotogrammetry(
+    inputDirectory: string,
+    outputFilename: string,
+    detail: string,
+    progressCallback: (progress: { status: string; progress: number }[]) => void
+  ): Promise<string>;
+
+  /**
+   * Get the directory where photogrammetry images are being captured
+   * @returns Promise with directory path or null
+   */
+  getPhotogrammetryCaptureDirectory(): Promise<string | null>;
+
+  /**
+   * Get the current count of captured images
+   * @returns Promise with image count
+   */
+  getPhotogrammetryImageCount(): Promise<number>;
 }
 
 // Link to the native module

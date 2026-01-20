@@ -23,12 +23,23 @@ export const ARScreen: React.FC<ARScreenProps> = ({ navigation }) => {
   const [isSupported, setIsSupported] = useState<boolean | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [scanProgress, setScanProgress] = useState<any>(null);
+  const [imageCount, setImageCount] = useState(0);
+  const [captureDirectory, setCaptureDirectory] = useState<string | null>(null);
+  const [processingProgress, setProcessingProgress] = useState<{ status: string; progress: number } | null>(null);
+  const [selectedQuality, setSelectedQuality] = useState<'reduced' | 'medium' | 'full' | 'raw'>('medium');
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
 
   // Check AR support on mount
   useEffect(() => {
     checkARSupport();
-  }, []);
+    
+    // Cleanup polling interval on unmount
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [pollingInterval]);
 
   const checkARSupport = async () => {
     try {
@@ -59,95 +70,184 @@ export const ARScreen: React.FC<ARScreenProps> = ({ navigation }) => {
 
   const handleStartScan = async () => {
     if (isScanning) {
-      // Stop scanning
+      // Stop capturing images
       setIsLoading(true);
+      
+      // Clear polling interval
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+        setPollingInterval(null);
+      }
+      
       try {
         const scanData = await ARNativeModule.stopObjectScan();
         setIsScanning(false);
-        setScanProgress(null);
-        
-        const filename = `scan_${Date.now()}`;
+        const directory = scanData.directory || captureDirectory;
+        const count = scanData.imageCount || imageCount;
         
         Alert.alert(
-          'Scan Complete',
-          `Captured ${scanData.meshCount || 0} meshes with ${scanData.vertexCount || 0} vertices`,
+          'Capture Complete',
+          `Captured ${count} images`,
           [
-            { text: 'Dismiss', style: 'cancel' },
+            { text: 'OK', style: 'cancel' },
             {
-              text: 'Save',
+              text: 'Process Now',
               onPress: async () => {
-                try {
-                  const filePath = await ARNativeModule.saveOBJToFile(filename);
-                  Alert.alert('Saved', `File saved to: ${filePath}`);
-                } catch (error) {
-                  Alert.alert('Error', 'Failed to save file');
+                // Check if photogrammetry is supported
+                const isSupported = await ARNativeModule.isPhotogrammetrySupported();
+                if (!isSupported) {
+                  Alert.alert(
+                    'Not Supported',
+                    'Photogrammetry is not supported on this device. Requires Mac with 4GB+ GPU and ray tracing, or iOS device with LiDAR.',
+                    [{ text: 'OK' }]
+                  );
+                  return;
                 }
+                
+                // Show quality selector
+                Alert.alert(
+                  'Select Quality',
+                  'Choose processing quality level',
+                  [
+                    {
+                      text: 'Reduced (Fast)',
+                      onPress: () => processPhotogrammetry(directory, 'reduced')
+                    },
+                    {
+                      text: 'Medium',
+                      onPress: () => processPhotogrammetry(directory, 'medium')
+                    },
+                    {
+                      text: 'Full (Slow)',
+                      onPress: () => processPhotogrammetry(directory, 'full')
+                    },
+                    { text: 'Cancel', style: 'cancel' }
+                  ]
+                );
               },
             },
             {
-              text: 'Share',
+              text: 'Share Images',
               onPress: async () => {
                 try {
-                  console.log('Starting file save...');
-                  const filePath = await ARNativeModule.saveOBJToFile(filename);
-                  console.log('File saved successfully:', filePath);
-                  
-                  // Verify file was created
-                  if (!filePath) {
-                    throw new Error('Failed to create file - no path returned');
+                  if (!directory) {
+                    Alert.alert('Error', 'No capture directory found');
+                    return;
                   }
                   
-                  // Add a small delay to ensure file is fully flushed to disk
-                  await new Promise(resolve => setTimeout(resolve, 200));
-                  
-                  console.log('Attempting to share file...');
-                  
-                  // Use React Native's cross-platform Share API
-                  const shareOptions = {
-                    title: '3D Object Scan',
-                    message: `3D scan captured: ${filename}.obj`,
-                    url: filePath, // Pass the absolute path
-                  };
-                  
-                  const result = await Share.share(shareOptions);
-                  
-                  if (result.action === Share.sharedAction) {
-                    console.log('File shared successfully');
-                    Alert.alert('Success', 'File shared successfully');
-                  } else if (result.action === Share.dismissedAction) {
-                    console.log('Share dismissed by user');
-                  }
+                  await Share.share({
+                    title: 'Photogrammetry Images',
+                    message: `Captured ${count} images for 3D reconstruction`,
+                    url: directory,
+                  });
                 } catch (error) {
-                  console.error('Error sharing file:', error);
-                  Alert.alert('Error', `Failed to share file: ${error}`);
+                  console.error('Error sharing directory:', error);
+                  Alert.alert('Error', 'Failed to share images');
                 }
               },
             },
           ]
         );
       } catch (error: any) {
-        console.error('Error stopping scan:', error);
-        Alert.alert('Error', 'Failed to stop scan');
+        console.error('Error stopping capture:', error);
+        Alert.alert('Error', 'Failed to stop capture');
       } finally {
         setIsLoading(false);
       }
     } else {
-      // Start scanning
+      // Start capturing images
       setIsLoading(true);
       try {
         await ARNativeModule.startObjectScan();
         setIsScanning(true);
-        console.log('Object scanning started');
+        setImageCount(0);
+        console.log('Photogrammetry capture started');
+        
+        // Poll for image count updates
+        const interval = setInterval(async () => {
+          try {
+            const count = await ARNativeModule.getPhotogrammetryImageCount();
+            setImageCount(count);
+            
+            const directory = await ARNativeModule.getPhotogrammetryCaptureDirectory();
+            if (directory) {
+              setCaptureDirectory(directory);
+            }
+          } catch (error) {
+            console.error('Error getting capture info:', error);
+          }
+        }, 500); // Poll every 500ms for smooth updates
+        
+        setPollingInterval(interval);
       } catch (error: any) {
-        console.error('Error starting scan:', error);
+        console.error('Error starting capture:', error);
         Alert.alert(
-          'Scan Error',
-          error.message || 'Failed to start object scan',
+          'Capture Error',
+          error.message || 'Failed to start photogrammetry capture',
           [{ text: 'OK' }]
         );
       } finally {
         setIsLoading(false);
       }
+    }
+  };
+
+  const processPhotogrammetry = async (directory: string | null, quality: string) => {
+    if (!directory) {
+      Alert.alert('Error', 'No capture directory found');
+      return;
+    }
+    
+    setIsLoading(true);
+    setProcessingProgress({ status: 'Starting...', progress: 0 });
+    
+    try {
+      const filename = `model_${Date.now()}`;
+      const outputPath = await ARNativeModule.processPhotogrammetry(
+        directory,
+        filename,
+        quality,
+        (progressData) => {
+          if (progressData && progressData[0]) {
+            setProcessingProgress(progressData[0]);
+          }
+        }
+      );
+      
+      setProcessingProgress(null);
+      
+      Alert.alert(
+        'Processing Complete',
+        `USDZ model generated successfully`,
+        [
+          { text: 'OK', style: 'cancel' },
+          {
+            text: 'Share Model',
+            onPress: async () => {
+              try {
+                await Share.share({
+                  title: '3D Model',
+                  message: `3D model generated from ${imageCount} images`,
+                  url: outputPath,
+                });
+              } catch (error) {
+                console.error('Error sharing model:', error);
+                Alert.alert('Error', 'Failed to share model');
+              }
+            },
+          },
+        ]
+      );
+    } catch (error: any) {
+      console.error('Error processing photogrammetry:', error);
+      setProcessingProgress(null);
+      Alert.alert(
+        'Processing Failed',
+        error.message || 'Failed to process photogrammetry',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -179,20 +279,35 @@ export const ARScreen: React.FC<ARScreenProps> = ({ navigation }) => {
       {/* AR Camera View */}
       <ARViewNative style={styles.arView} />
       
-      {/* Scanning Status Overlay */}
+      {/* Capture Status Overlay */}
       {isScanning && (
         <View style={styles.statusOverlay}>
           <View style={styles.statusContainer}>
             <View style={[styles.statusIndicator, styles.statusScanning]} />
-            <Text style={styles.statusText}>Scanning Object...</Text>
+            <Text style={styles.statusText}>Capturing Images...</Text>
           </View>
-          {scanProgress && (
-            <Text style={styles.progressText}>
-              Meshes: {scanProgress.meshCount || 0} | Vertices: {scanProgress.vertexCount || 0}
-            </Text>
-          )}
+          <Text style={styles.progressText}>
+            Images: {imageCount}
+          </Text>
           <Text style={styles.instructionText}>
-            Move around the object slowly
+            Move slowly around the object{"\n"}
+            Capture from multiple angles (50-100 images recommended)
+          </Text>
+        </View>
+      )}
+      
+      {/* Processing Progress Overlay */}
+      {processingProgress && (
+        <View style={styles.statusOverlay}>
+          <View style={styles.statusContainer}>
+            <ActivityIndicator size="small" color="#00BCD4" style={{marginRight: 10}} />
+            <Text style={styles.statusText}>Processing...</Text>
+          </View>
+          <Text style={styles.progressText}>
+            {processingProgress.status}: {Math.round(processingProgress.progress * 100)}%
+          </Text>
+          <Text style={styles.instructionText}>
+            This may take several minutes
           </Text>
         </View>
       )}
@@ -211,7 +326,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({ navigation }) => {
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.scanButtonText}>
-              {isScanning ? 'Stop Scanning' : 'Start Object Scan'}
+              {isScanning ? 'Stop Capture' : 'Start Photogrammetry'}
             </Text>
           )}
         </TouchableOpacity>

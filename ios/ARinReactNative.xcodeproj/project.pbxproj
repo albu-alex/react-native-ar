@@ -14,6 +14,7 @@
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		7E8A916C0AF1D93B91AF2802 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		D5D76A8D2F1EFD1500F229D1 /* PhotogrammetryCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5D76A8C2F1EFD1500F229D1 /* PhotogrammetryCapture.swift */; };
 		DACF8C376034B78762F49163 /* ARViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 467820FC2C5A25A45EC61624 /* ARViewManager.m */; };
 		DEBC09AECB723B210ABC3E9C /* ARViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60B5E9B3F72F064D7FAAC450 /* ARViewManager.swift */; };
 		E05A755DEA8365B22476ECBD /* ARNativeModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FFE6D97F01691C87A264684 /* ARNativeModule.m */; };
@@ -33,6 +34,7 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ARinReactNative/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ARinReactNative/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A15C5D567FD28E73F63D3A8D /* ARView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ARView.swift; path = ARinReactNative/ARView.swift; sourceTree = "<group>"; };
+		D5D76A8C2F1EFD1500F229D1 /* PhotogrammetryCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotogrammetryCapture.swift; sourceTree = "<group>"; };
 		D68F11C1463C4BE8062177DC /* ARNativeModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ARNativeModule.swift; path = ARinReactNative/ARNativeModule.swift; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -52,6 +54,7 @@
 		13B07FAE1A68108700A75B9A /* ARinReactNative */ = {
 			isa = PBXGroup;
 			children = (
+				D5D76A8C2F1EFD1500F229D1 /* PhotogrammetryCapture.swift */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
@@ -206,9 +209,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-ARinReactNative/Pods-ARinReactNative-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-ARinReactNative/Pods-ARinReactNative-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -245,9 +252,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-ARinReactNative/Pods-ARinReactNative-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-ARinReactNative/Pods-ARinReactNative-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -263,6 +274,7 @@
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				E05A755DEA8365B22476ECBD /* ARNativeModule.m in Sources */,
+				D5D76A8D2F1EFD1500F229D1 /* PhotogrammetryCapture.swift in Sources */,
 				1B9F072A524428304952AB05 /* ARNativeModule.swift in Sources */,
 				1B25324B9BEDA31959AACD60 /* ARView.swift in Sources */,
 				DEBC09AECB723B210ABC3E9C /* ARViewManager.swift in Sources */,
