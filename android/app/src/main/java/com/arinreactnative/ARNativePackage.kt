@@ -11,6 +11,6 @@ class ARNativePackage : ReactPackage {
     }
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
-        return emptyList()
+        return listOf(ARViewManager(reactContext))
     }
 }

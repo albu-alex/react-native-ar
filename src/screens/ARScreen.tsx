@@ -198,6 +198,32 @@ export const ARScreen: React.FC<ARScreenProps> = ({ navigation }) => {
       return;
     }
     
+    // Check if we're on Android
+    if (Platform.OS === 'android') {
+      Alert.alert(
+        'Android Limitation',
+        `Captured ${imageCount} images successfully!\n\nAndroid doesn't have built-in 3D reconstruction. You can:\n\n1. Share the images and use external photogrammetry software (Metashape, RealityCapture)\n2. Use cloud services (Polycam API, Sketchfab)\n3. Process on a Mac/iOS device with this app`,
+        [
+          { text: 'OK' },
+          {
+            text: 'Share Images',
+            onPress: async () => {
+              try {
+                await Share.share({
+                  title: 'Photogrammetry Images',
+                  message: `${imageCount} images ready for 3D reconstruction. Directory: ${directory}`,
+                  url: directory,
+                });
+              } catch (error) {
+                console.error('Error sharing:', error);
+              }
+            }
+          }
+        ]
+      );
+      return;
+    }
+    
     setIsLoading(true);
     setProcessingProgress({ status: 'Starting...', progress: 0 });
     
